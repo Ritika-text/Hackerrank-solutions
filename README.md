@@ -1,2 +1,2 @@
 # Hackerrank-solutions
-There are some of my hackerrank solutions in C
+Here are some of my hackerrank solutions in C
