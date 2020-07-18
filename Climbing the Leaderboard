@@ -1,0 +1,168 @@
+#include <assert.h>
+#include <limits.h>
+#include <math.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char* readline();
+char** split_string(char*);
+int find_position(int number,int left,int right,int* scores)
+{
+    int mid=(left+right)/2;
+    if(scores[left]==number||scores[0]<number)
+    return left;
+    if(scores[left]>number&&scores[left+1]<=number)
+    return (left+1);
+    if((scores[right-1]>number&&scores[right]<=number)||scores[right]==number)
+    return right;
+    if(scores[mid]>number&&scores[mid+1]<=number)
+    return (mid+1);
+    if((scores[mid-1]>number&&scores[mid]<=number)||scores[mid]==number)
+    return mid;
+    if(left==right)
+    return left;
+    if(scores[mid]>number)
+    left=mid;
+    else if(scores[mid]<number)
+    right=mid-1;
+    return find_position(number,left,right,scores);
+}
+int* climbingLeaderboard(int scores_count, int* scores, int alice_count, int* alice, int* result_count) {
+    *result_count=alice_count;
+static int m[200000];
+int rank[scores_count+1],i=0,j=0,count=1;
+for(i=0;i<scores_count;i++)
+{
+    rank[i]=count;
+    if(scores[i]!=scores[i+1])
+        count++;
+}
+rank[i]=rank[i-1]+1;
+for(int i=0;i<alice_count;i++)
+{
+    if(scores[scores_count-1]>alice[i])
+    j=scores_count;
+    else
+    j=find_position(alice[i],0,scores_count,scores);
+    m[i]=rank[j];
+}
+return m;
+}
+
+int main()
+{
+    FILE* fptr = fopen(getenv("OUTPUT_PATH"), "w");
+
+    char* scores_count_endptr;
+    char* scores_count_str = readline();
+    int scores_count = strtol(scores_count_str, &scores_count_endptr, 10);
+
+    if (scores_count_endptr == scores_count_str || *scores_count_endptr != '\0') { exit(EXIT_FAILURE); }
+
+    char** scores_temp = split_string(readline());
+
+    int* scores = malloc(scores_count * sizeof(int));
+
+    for (int i = 0; i < scores_count; i++) {
+        char* scores_item_endptr;
+        char* scores_item_str = *(scores_temp + i);
+        int scores_item = strtol(scores_item_str, &scores_item_endptr, 10);
+
+        if (scores_item_endptr == scores_item_str || *scores_item_endptr != '\0') { exit(EXIT_FAILURE); }
+
+        *(scores + i) = scores_item;
+    }
+
+    char* alice_count_endptr;
+    char* alice_count_str = readline();
+    int alice_count = strtol(alice_count_str, &alice_count_endptr, 10);
+
+    if (alice_count_endptr == alice_count_str || *alice_count_endptr != '\0') { exit(EXIT_FAILURE); }
+
+    char** alice_temp = split_string(readline());
+
+    int* alice = malloc(alice_count * sizeof(int));
+
+    for (int i = 0; i < alice_count; i++) {
+        char* alice_item_endptr;
+        char* alice_item_str = *(alice_temp + i);
+        int alice_item = strtol(alice_item_str, &alice_item_endptr, 10);
+
+        if (alice_item_endptr == alice_item_str || *alice_item_endptr != '\0') { exit(EXIT_FAILURE); }
+
+        *(alice + i) = alice_item;
+    }
+
+    int result_count;
+    int* result = climbingLeaderboard(scores_count, scores, alice_count, alice, &result_count);
+
+    for (int i = 0; i < result_count; i++) {
+        fprintf(fptr, "%d", *(result + i));
+
+        if (i != result_count - 1) {
+            fprintf(fptr, "\n");
+        }
+    }
+
+    fprintf(fptr, "\n");
+
+    fclose(fptr);
+
+    return 0;
+}
+
+char* readline() {
+    size_t alloc_length = 1024;
+    size_t data_length = 0;
+    char* data = malloc(alloc_length);
+
+    while (true) {
+        char* cursor = data + data_length;
+        char* line = fgets(cursor, alloc_length - data_length, stdin);
+
+        if (!line) { break; }
+
+        data_length += strlen(cursor);
+
+        if (data_length < alloc_length - 1 || data[data_length - 1] == '\n') { break; }
+
+        size_t new_length = alloc_length << 1;
+        data = realloc(data, new_length);
+
+        if (!data) { break; }
+
+        alloc_length = new_length;
+    }
+
+    if (data[data_length - 1] == '\n') {
+        data[data_length - 1] = '\0';
+    }
+
+    data = realloc(data, data_length);
+
+    return data;
+}
+
+char** split_string(char* str) {
+    char** splits = NULL;
+    char* token = strtok(str, " ");
+
+    int spaces = 0;
+
+    while (token) {
+        splits = realloc(splits, sizeof(char*) * ++spaces);
+        if (!splits) {
+            return splits;
+        }
+
+        splits[spaces - 1] = token;
+
+        token = strtok(NULL, " ");
+    }
+
+    return splits;
+}
